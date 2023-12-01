@@ -67,7 +67,7 @@ jobs:
         with: 
           name: static-build
           path: build/
-      - name: Configure AWS credentials from Test account
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-frontend
@@ -82,6 +82,3 @@ jobs:
           CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  | jq -r ".ResourceTagMappingList[].ResourceARN" | sed 's:.*/::')
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/*" --output json | jq -r '.Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
-        
-        
-        
