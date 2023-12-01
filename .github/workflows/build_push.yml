@@ -9,7 +9,7 @@ on:
       repo_name:
         required: true
         type: string
-      work_dir:
+      workdir:
         required: true
         type: string
     secrets:
@@ -44,4 +44,4 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPO_NAME: ${{vars.PROJECT_NAME}}-${{inputs.repo_name}}
-          WORKDIR: ${{inputs.work_dir}}
+          WORKDIR: ${{inputs.workdir}}
