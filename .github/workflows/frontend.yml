@@ -6,9 +6,6 @@ on:
       environment:
         required: true
         type: string
-      bucket:
-        required: true
-        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -60,7 +57,7 @@ jobs:
     environment: ${{inputs.environment}}
     runs-on: self-hosted
     env:
-      AWS_STORAGE_BUCKET_NAME: ${{inputs.bucket}}
+      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-static-files"
     defaults:
       run:
         shell: bash
