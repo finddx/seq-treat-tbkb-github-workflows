@@ -9,6 +9,9 @@ on:
       bucket:
         required: true
         type: string
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
      
 jobs:
   build_static:
