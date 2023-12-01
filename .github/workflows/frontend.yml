@@ -6,6 +6,9 @@ on:
       environment:
         required: true
         type: string
+      bucket:
+        required: true
+        type: string
      
 jobs:
   build_static:
@@ -49,12 +52,12 @@ jobs:
           name: static-build
           path: build/
 
-  deploy_static-test:
+  deploy_static:
     needs: build_static
     environment: ${{inputs.environment}}
     runs-on: self-hosted
     env:
-      AWS_STORAGE_BUCKET_NAME: "fdx-main-${{vars.ENV_NAME}}-static-files"
+      AWS_STORAGE_BUCKET_NAME: ${{inputs.bucket}}
     defaults:
       run:
         shell: bash
