@@ -1,0 +1,84 @@
+name: Reusable workflow for building and deploying front-end
+
+on:
+  workflow_call:
+    inputs:
+      environments:
+        required: true
+        type: string
+     
+jobs:
+  build_static:
+    runs-on: self-hosted
+    container:
+      image: node:17.4.0
+    defaults:
+      run:
+        shell: bash
+    environment: ${{inputs.environment}}
+    env:
+      CI: false
+      REACT_APP_NODE_ENV: "development"
+      REACT_APP_SERVER_ENDPOINT: "${{vars.ENV_URL}}/api/v1/"
+      REACT_APP_ENTRA_TENANT: "${{vars.REACT_APP_ENTRA_TENANT}}"
+      REACT_APP_EMAIL_CONTACT: "${{vars.REACT_APP_EMAIL_CONTACT}}"
+      REACT_APP_MSAL_REDIRECT_URI: "${{vars.ENV_URL}}/overview"
+      REACT_APP_MSAL_AUTHORITY: ${{ vars.REACT_APP_MSAL_AUTHORITY}}
+      REACT_APP_MSAL_CLIENT_ID: ${{ vars.REACT_APP_MSAL_CLIENT_ID}}
+      REACT_APP_MSAL_SCOPES: ${{ vars.REACT_APP_MSAL_SCOPES}}
+      HUSKY: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build static files
+        run: |
+          npm install
+          npm run build
+      - name: Check build success
+        run: |
+          ERR_CODE=$(ls build/ | grep -c "index.html") || true
+          if [ $ERR_CODE -eq 0 ];
+          then
+            echo "Can not find index.html in build result" && exit 1;
+          else
+            echo "Building static files has been finished!";
+          fi;
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: static-build
+          path: build/
+
+  deploy_static-test:
+    needs: build_static
+    environment: ${{inputs.environment}}
+    runs-on: self-hosted
+    env:
+      AWS_STORAGE_BUCKET_NAME: "fdx-main-${{vars.ENV_NAME}}-static-files"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with: 
+          name: static-build
+          path: build/
+      - name: Configure AWS credentials from Test account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-frontend
+          aws-region: ${{vars.AWS_REGION}}
+          mask-aws-account-id: true
+      - name: Clean up bucket
+        run: aws s3 rm --recursive s3://${AWS_STORAGE_BUCKET_NAME}
+      - name: Copy new files
+        run: aws s3 cp build/ s3://${AWS_STORAGE_BUCKET_NAME} --recursive --include "*"
+      - name: Invalidation Cloudfront distribution
+        run: |
+          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  | jq -r ".ResourceTagMappingList[].ResourceARN" | sed 's:.*/::')
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/*" --output json | jq -r '.Invalidation.Id')
+          aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
+        
+        
+        
