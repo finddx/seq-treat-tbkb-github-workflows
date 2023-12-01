@@ -39,4 +39,4 @@ jobs:
           docker push ${REGISTRY}/${REPO_NAME}:${{ github.sha }}
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPO_NAME: ${{inputs.repo_name}}
+          REPO_NAME: ${{vars.PROJECT_NAME}}-${{inputs.repo_name}}
