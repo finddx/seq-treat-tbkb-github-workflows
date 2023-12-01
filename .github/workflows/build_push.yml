@@ -9,6 +9,9 @@ on:
       repo_name:
         required: true
         type: string
+      work_dir:
+        required: true
+        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -34,9 +37,11 @@ jobs:
           mask-password: 'true'
       - name: Build and push image
         run: |
+          cd WORKDIR
           docker build --tag ${REGISTRY}/${REPO_NAME}:latest --tag ${REGISTRY}/${REPO_NAME}:${{ github.sha }} .
           docker push ${REGISTRY}/${REPO_NAME}:latest
           docker push ${REGISTRY}/${REPO_NAME}:${{ github.sha }}
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPO_NAME: ${{vars.PROJECT_NAME}}-${{inputs.repo_name}}
+          WORKDIR: ${{inputs.work_dir}}

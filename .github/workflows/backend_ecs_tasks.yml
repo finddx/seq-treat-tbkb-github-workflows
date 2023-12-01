@@ -16,6 +16,7 @@ jobs:
     with:
       environment: ${{inputs.environment}}
       repo_name: backend
+      workdir: ./
     secrets:
       AWS_ACCOUNT_iD: ${{secrets.AWS_ACCOUNT_ID}}
 
