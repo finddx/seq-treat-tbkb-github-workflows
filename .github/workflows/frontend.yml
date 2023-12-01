@@ -3,7 +3,7 @@ name: Reusable workflow for building and deploying front-end
 on:
   workflow_call:
     inputs:
-      environments:
+      environment:
         required: true
         type: string
      
