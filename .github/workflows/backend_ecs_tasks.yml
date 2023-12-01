@@ -1,0 +1,74 @@
+name: Reusable workflow for running the ECS backend tasks
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+
+jobs:
+  build_push:
+    uses: finddx/seq-treat-tbkb-github-workflows/.github/workflows/build_push.yml@main
+    with:
+      environment: ${{inputs.environment}}
+      repo_name: ${{vars.PROJECT_NAME}}-backend
+    secrets:
+      AWS_ACCOUNT_iD: ${{secrets.AWS_ACCOUNT_ID}}
+
+
+  run_migration_task:
+    runs-on: self-hosted
+    environment: ${{inputs.environment}}
+    needs: build_push
+    env:
+      SUBNET_LABEL_TAG: "${{vars.PROJECT_NAME}}-${{vars.ENV_NAME}}-public-subnets"
+      SECURITY_GROUP_LABEL_TAG: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-private-ecs"
+      CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
+      CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
+      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-backend
+          aws-region: ${{vars.AWS_REGION}}
+          mask-aws-account-id: true
+      - name: Start migration task
+        run: |
+          echo "Running database migrations..."
+          export SUBNET=$(aws ec2 describe-subnets --filter "Name=tag:Label,Values=${SUBNET_LABEL_TAG}" --query 'Subnets[0].SubnetId' --output text)
+          export SG=$(aws ec2 describe-security-groups --filter Name=tag:Label,Values=${SECURITY_GROUP_LABEL_TAG} --query 'SecurityGroups[*].[GroupId]' --output text)
+          export START_TIME=$(date +%s000)
+          export NET_CONFIG="{\"awsvpcConfiguration\":{\"securityGroups\":[\"${SG}\"]"",""\"subnets\":[\"${SUBNET}\"],\"assignPublicIp\":\"ENABLED\"}}"
+          export TASK_ARN=$(aws ecs run-task --cluster ${CI_AWS_ECS_CLUSTER} --task-definition ${CI_AWS_ECS_TASK_DEFINITION}-migrations --network-configuration ${NET_CONFIG} --launch-type FARGATE --output json | jq -r '.tasks[0].taskArn')
+          export TASK_ID=$(echo ${TASK_ARN} | sed 's/.*\///g')
+          aws ecs wait tasks-stopped --tasks ${TASK_ARN} --cluster ${CI_AWS_ECS_CLUSTER}
+          export END_TIME=$(date +%s000)
+          aws logs get-log-events --log-group-name "/ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations" --log-stream-name "ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations/${TASK_ID}" --start-time $START_TIME --end-time $END_TIME --output json | jq -r '.events[].message' ##| grep -Ei "Error"
+          echo "All migrations tasks have been completed!"
+
+  force_updated_backend_task:
+    runs-on: self-hosted
+    environment: ${{inputs.environment}}
+    env:
+      CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
+      CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
+      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-backend
+          aws-region: ${{vars.AWS_REGION}}
+          mask-aws-account-id: true
+      - name: Update backend task
+        run: |
+          aws ecs list-tasks --cluster ${CI_AWS_ECS_CLUSTER} --region ${AWS_DEFAULT_REGION}
+          aws ecs update-service --region ${AWS_DEFAULT_REGION} --cluster ${CI_AWS_ECS_CLUSTER} --service ${CI_AWS_ECS_TASK_DEFINITION} --task-definition ${CI_AWS_ECS_TASK_DEFINITION} --force-new-deployment
+          echo "Services updated. Waiting for services to become stable..."
+          aws ecs wait services-stable --region ${AWS_DEFAULT_REGION} --cluster ${CI_AWS_ECS_CLUSTER} --service ${CI_AWS_ECS_TASK_DEFINITION}
+          echo "Backend update complete!"
