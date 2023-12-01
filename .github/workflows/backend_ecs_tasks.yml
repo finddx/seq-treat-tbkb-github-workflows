@@ -51,9 +51,10 @@ jobs:
           aws logs get-log-events --log-group-name "/ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations" --log-stream-name "ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations/${TASK_ID}" --start-time $START_TIME --end-time $END_TIME --output json | jq -r '.events[].message' ##| grep -Ei "Error"
           echo "All migrations tasks have been completed!"
 
-  force_updated_backend_task:
+  force_update_backend_task:
     runs-on: self-hosted
     environment: ${{inputs.environment}}
+    needs: run_migration_task
     env:
       CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
       CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
