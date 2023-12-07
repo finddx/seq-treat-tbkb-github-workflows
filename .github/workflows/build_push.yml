@@ -18,7 +18,7 @@ on:
      
 
 jobs:
-  build_push_db-for-prod:
+  build_push:
     runs-on: self-hosted
     environment: ${{inputs.environment}}
     steps:
