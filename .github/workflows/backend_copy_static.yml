@@ -27,8 +27,6 @@ jobs:
         run: pipenv install --system --dev --deploy
       - name: Collect static
         run: python manage.py collectstatic --noinput --clear
-      - name: Install dep pipenv
-        run: pipenv install --system --dev --deploy
       - name: Upload static files artifact
         uses: actions/upload-artifact@v3
         with:
