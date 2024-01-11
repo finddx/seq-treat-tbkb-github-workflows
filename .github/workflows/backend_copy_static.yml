@@ -38,7 +38,7 @@ jobs:
     environment: ${{inputs.environment}}
     needs: collect_static_backend
     container:
-      image: ubuntu-22.04
+      image: amazon/aws-cli:latest
     env:
       STATIC_ROOT: "static/"
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
