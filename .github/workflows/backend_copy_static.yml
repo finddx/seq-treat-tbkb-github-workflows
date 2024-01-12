@@ -59,8 +59,6 @@ jobs:
           aws s3 rm --recursive s3://${AWS_STORAGE_BUCKET_NAME}
           aws s3 cp ${STATIC_ROOT} s3://${AWS_STORAGE_BUCKET_NAME}/static_files/ --recursive --include "*"
           CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
-          echo $CDN_DISTRIBUTION_ID
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
-          echo $INVALIDATION_ID
           aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
       
