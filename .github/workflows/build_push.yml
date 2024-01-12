@@ -21,8 +21,6 @@ jobs:
   build_push:
     runs-on: self-hosted
     environment: ${{inputs.environment}}
-    container:
-      image: gcr.io/kaniko-project/executor:v1.9.1-debug
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,15 +37,11 @@ jobs:
           mask-password: 'true'
       - name: Build and push image
         run: |
-          mkdir -p /kaniko/.docker
-          echo "{\"credsStore\":\"ecr-login\"}" > /kaniko/.docker/config.json
-          /kaniko/executor \
-            --context "${BUILD_DIR}" \
-            --dockerfile "${BUILD_DIR}/Dockerfile" \
-            --destination "${REGISTRY}/${REPO_NAME}:${{ github.sha }}" \
-            --destination "${REGISTRY}/${REPO_NAME}:latest" \
-            --cleanup \
+          cd ${WORKDIR}
+          docker build --tag ${REGISTRY}/${REPO_NAME}:latest --tag ${REGISTRY}/${REPO_NAME}:${{ github.sha }} .
+          docker push ${REGISTRY}/${REPO_NAME}:latest
+          docker push ${REGISTRY}/${REPO_NAME}:${{ github.sha }}
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPO_NAME: ${{vars.PROJECT_NAME}}-${{inputs.repo_name}}
-          BUILD_DIR: ${{inputs.workdir}}
+          WORKDIR: ${{inputs.workdir}}
