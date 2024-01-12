@@ -25,6 +25,8 @@ jobs:
     runs-on: self-hosted
     environment: ${{inputs.environment}}
     needs: build_push
+    container:
+      image: amazon/aws-cli:latest
     env:
       SUBNET_LABEL_TAG: "${{vars.PROJECT_NAME}}-${{vars.ENV_NAME}}-public-subnets"
       SECURITY_GROUP_LABEL_TAG: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-private-ecs"
@@ -56,6 +58,8 @@ jobs:
     runs-on: self-hosted
     environment: ${{inputs.environment}}
     needs: run_migration_task
+    container:
+      image: amazon/aws-cli:latest
     env:
       CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
       CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
