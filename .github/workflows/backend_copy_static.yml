@@ -49,7 +49,7 @@ jobs:
           name: static
           path: static/
       - name: Configure AWS credentials from Test account
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
