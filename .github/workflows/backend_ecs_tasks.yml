@@ -47,11 +47,11 @@ jobs:
           export SG=$(aws ec2 describe-security-groups --filter Name=tag:Label,Values=${SECURITY_GROUP_LABEL_TAG} --query 'SecurityGroups[*].[GroupId]' --output text)
           export START_TIME=$(date +%s000)
           export NET_CONFIG="{\"awsvpcConfiguration\":{\"securityGroups\":[\"${SG}\"]"",""\"subnets\":[\"${SUBNET}\"],\"assignPublicIp\":\"ENABLED\"}}"
-          export TASK_ARN=$(aws ecs run-task --cluster ${CI_AWS_ECS_CLUSTER} --task-definition ${CI_AWS_ECS_TASK_DEFINITION}-migrations --network-configuration ${NET_CONFIG} --launch-type FARGATE --output json | jq -r '.tasks[0].taskArn')
+          export TASK_ARN=$(aws ecs run-task --cluster ${CI_AWS_ECS_CLUSTER} --task-definition ${CI_AWS_ECS_TASK_DEFINITION}-migrations --network-configuration ${NET_CONFIG} --launch-type FARGATE --output text --query 'tasks[0].taskArn')
           export TASK_ID=$(echo ${TASK_ARN} | sed 's/.*\///g')
           aws ecs wait tasks-stopped --tasks ${TASK_ARN} --cluster ${CI_AWS_ECS_CLUSTER}
           export END_TIME=$(date +%s000)
-          aws logs get-log-events --log-group-name "/ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations" --log-stream-name "ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations/${TASK_ID}" --start-time $START_TIME --end-time $END_TIME --output json | jq -r '.events[].message' ##| grep -Ei "Error"
+          aws logs get-log-events --log-group-name "/ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations" --log-stream-name "ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations/${TASK_ID}" --start-time $START_TIME --end-time $END_TIME --output text --query 'events[].message' ##| grep -Ei "Error"
           echo "All migrations tasks have been completed!"
 
   force_update_backend_task:
