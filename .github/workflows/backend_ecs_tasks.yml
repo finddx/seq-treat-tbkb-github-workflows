@@ -51,7 +51,6 @@ jobs:
           export TASK_ID=$(echo ${TASK_ARN} | sed 's/.*\///g')
           aws ecs wait tasks-stopped --tasks ${TASK_ARN} --cluster ${CI_AWS_ECS_CLUSTER}
           export END_TIME=$(date +%s000)
-          echo $TASK_ID
           aws logs get-log-events --log-group-name "/aws/ecs/${CI_AWS_ECS_TASK_DEFINITION}-migrations" --log-stream-name "task/${CI_AWS_ECS_TASK_DEFINITION}-migrations/${TASK_ID}" --start-time $START_TIME --end-time $END_TIME --output text --query 'events[].message' ##| grep -Ei "Error"
           echo "All migrations tasks have been completed!"
 
