@@ -6,13 +6,16 @@ on:
       environment:
         required: true
         type: string
+      runner:
+        required: true
+        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
      
 jobs:
   build_static:
-    runs-on: self-hosted
+    runs-on: ${{inputs.runner}}
     container:
       image: node:17.4.0
     defaults:
@@ -55,7 +58,7 @@ jobs:
   deploy_static:
     needs: build_static
     environment: ${{inputs.environment}}
-    runs-on: self-hosted
+    runs-on: ${{inputs.runner}}
     env:
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-static-files"
     defaults:
