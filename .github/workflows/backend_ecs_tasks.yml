@@ -22,7 +22,7 @@ jobs:
 
 
   run_migration_task:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     needs: build_push
     container:
@@ -55,7 +55,7 @@ jobs:
           echo "All migrations tasks have been completed!"
 
   force_update_backend_task:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     needs: run_migration_task
     container:
