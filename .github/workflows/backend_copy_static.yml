@@ -12,7 +12,7 @@ on:
        
 jobs:
   collect_static_backend:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: python:3.10
     env:
@@ -34,7 +34,7 @@ jobs:
           path: static/
 
   copy_backend_static_files:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     needs: collect_static_backend
     container:
