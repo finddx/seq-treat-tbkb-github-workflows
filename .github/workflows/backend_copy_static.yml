@@ -46,6 +46,8 @@ jobs:
     env:
       STATIC_ROOT: "static/"
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
+      PROJECT_NAME: ${{vars.PROJECT_NAME}}
+      ENV_NAME: ${{vars.ENV_NAME}}
     steps:
       - name: Download static files artifact
         uses: actions/download-artifact@v3
