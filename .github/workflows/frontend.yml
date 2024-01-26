@@ -74,7 +74,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-frontend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Clean up bucket
