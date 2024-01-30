@@ -21,7 +21,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-push-glue
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${PROJECT_NAME}-main-${ENV_NAME}-my-github-actions-push-glue
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - run: aws s3 cp cfn/glue-jobs s3://${PROJECT_NAME}-main-${ENV_NAME}-glue-scripts/glue-jobs/ --recursive
