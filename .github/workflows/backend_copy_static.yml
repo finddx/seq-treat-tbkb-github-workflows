@@ -6,9 +6,6 @@ on:
       environment:
         required: true
         type: string
-      role-name:
-        required: true
-        type: string
   
     secrets:
       AWS_ACCOUNT_ID:
@@ -57,7 +54,7 @@ jobs:
       - name: Configure AWS credentials from Test account
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{inputs.role-name}}
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Upload to S3
