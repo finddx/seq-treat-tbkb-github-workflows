@@ -12,9 +12,6 @@ on:
       workdir:
         required: true
         type: string
-      role-name:
-        required: true
-        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -30,7 +27,37 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{inputs.role-name}}
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${vars.PROJECT_NAME}-main-${vars.ENV_NAME}-my-github-actions-push-glue
+          aws-region: ${{vars.AWS_REGION}}
+          mask-aws-account-id: true
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+      - name: Build and push image
+        run: |
+          cd ${WORKDIR}
+          docker build --tag ${REGISTRY}/${REPO_NAME}:latest --tag ${REGISTRY}/${REPO_NAME}:${{ github.sha }} .
+          docker push ${REGISTRY}/${REPO_NAME}:latest
+          docker push ${REGISTRY}/${REPO_NAME}:${{ github.sha }}
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO_NAME: ${{vars.PROJECT_NAME}}-${{inputs.repo_name}}
+          WORKDIR: ${{inputs.workdir}}
+
+
+
+  build_push_prod:
+    runs-on: ubuntu-latest
+    environment: prod-unicc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/my-github-actions-push-glue
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Login to AWS ECR
