@@ -33,6 +33,7 @@ jobs:
       REACT_APP_MSAL_CLIENT_ID: ${{vars.REACT_APP_MSAL_CLIENT_ID}}
       REACT_APP_MSAL_SCOPES: ${{vars.REACT_APP_MSAL_SCOPES}}
       REACT_APP_GTM_ID: ${{vars.REACT_APP_GTM_ID}}
+      REACT_APP_ENV_HEADER_NAME: ${{vars.REACT_APP_ENV_HEADER_NAME}}
       HUSKY: 0
     steps:
       - name: Checkout
