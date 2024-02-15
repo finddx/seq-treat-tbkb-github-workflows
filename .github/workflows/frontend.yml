@@ -85,5 +85,5 @@ jobs:
       - name: Invalidation Cloudfront distribution
         run: |
           CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
-          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
