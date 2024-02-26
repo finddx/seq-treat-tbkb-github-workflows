@@ -1,0 +1,52 @@
+name: Terraform
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-terraform
+            aws-region: ${{vars.AWS_REGION}}
+            mask-aws-account-id: true
+  
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+    
+    - name: Terraform Init
+      id: init
+      run: terraform init
+    
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+    
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -no-color
+      continue-on-error: true
+

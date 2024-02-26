@@ -87,7 +87,7 @@ jobs:
           CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
           for i in $(aws s3api list-objects-v2 --bucket ${AWS_STORAGE_BUCKET_NAME}  --query "Contents[?!(contains(Key, 'static/'))].Key" --output text)
           do
-            aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/$i"  --output text --query 'Invalidation.Id';
+            aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/${i}"  --output text --query 'Invalidation.Id';
           done
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/static/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
