@@ -24,7 +24,11 @@ jobs:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-push-glue
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
-      - run: aws s3 cp cfn/glue-jobs s3://${PROJECT_NAME}-main-${ENV_NAME}-glue-scripts/glue-jobs/ --recursive
+      - run: |
+          cd ./cfn/glue-jobs/
+          zip -r9 ETL_tools.zip biosql_gene_views.py variant_annotation_categorization.py phenotypic_data_views.py
+          aws s3 cp ./  s3://${PROJECT_NAME}-main-${ENV_NAME}-glue-scripts/glue-jobs/ --recursive
+
         env:
           ENV_NAME: ${{vars.ENV_NAME}}
           PROJECT_NAME: ${{vars.PROJECT_NAME}}
