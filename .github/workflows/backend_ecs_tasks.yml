@@ -34,9 +34,10 @@ jobs:
       CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
       CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
@@ -65,9 +66,10 @@ jobs:
       CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
       CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
