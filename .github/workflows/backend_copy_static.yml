@@ -21,7 +21,7 @@ jobs:
       SECRET_KEY: "DUMMYSECRETKEYVALUE"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install dependencies pip
         run: pip install --no-cache-dir --upgrade pip pipenv
       - name: Install dep pipenv
