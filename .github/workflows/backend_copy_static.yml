@@ -13,15 +13,16 @@ on:
        
 jobs:
   collect_static_backend:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     container:
       image: python:3.10
     env:
       STATIC_ROOT: "static/"
       SECRET_KEY: "DUMMYSECRETKEYVALUE"
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       - name: Install dependencies pip
         run: pip install --no-cache-dir --upgrade pip pipenv
       - name: Install dep pipenv
@@ -29,13 +30,13 @@ jobs:
       - name: Collect static
         run: python manage.py collectstatic --noinput --clear
       - name: Upload static files artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: static
           path: static/
 
   copy_backend_static_files:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     needs: collect_static_backend
     container:
@@ -45,14 +46,15 @@ jobs:
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
       PROJECT_NAME: ${{vars.PROJECT_NAME}}
       ENV_NAME: ${{vars.ENV_NAME}}
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Download static files artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with: 
           name: static
           path: static/
       - name: Configure AWS credentials from Test account
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
