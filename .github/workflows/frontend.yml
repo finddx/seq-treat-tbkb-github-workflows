@@ -61,6 +61,8 @@ jobs:
     needs: build_static
     environment: ${{inputs.environment}}
     runs-on: ${{inputs.runner}}
+    container:
+      image: amazon/aws-cli:latest
     env:
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-static-files"
     defaults:
@@ -82,7 +84,7 @@ jobs:
         run: aws s3 rm --recursive s3://${AWS_STORAGE_BUCKET_NAME}
       - name: Copy new files
         run: aws s3 cp build/ s3://${AWS_STORAGE_BUCKET_NAME} --recursive --include "*"
-      - name: Invalidation Cloudfront distribution
+      - name: Invalidate Cloudfront distribution
         run: |
           CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
           for i in $(aws s3api list-objects-v2 --bucket ${AWS_STORAGE_BUCKET_NAME}  --query "Contents[?!(contains(Key, 'static/'))].Key" --output text)

@@ -53,13 +53,13 @@ jobs:
         with: 
           name: static
           path: static/
-      - name: Configure AWS credentials from Test account
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
-      - name: Upload to S3
+      - name: Upload artifacts to S3
         run: | 
           aws s3 rm --recursive s3://${AWS_STORAGE_BUCKET_NAME}
           aws s3 cp ${STATIC_ROOT} s3://${AWS_STORAGE_BUCKET_NAME}/static_files/ --recursive --include "*"
