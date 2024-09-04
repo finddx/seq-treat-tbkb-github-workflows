@@ -61,8 +61,6 @@ jobs:
     needs: build_static
     environment: ${{inputs.environment}}
     runs-on: ${{inputs.runner}}
-    container:
-      image: amazon/aws-cli:latest
     env:
       AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-static-files"
     defaults:
