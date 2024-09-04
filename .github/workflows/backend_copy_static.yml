@@ -31,7 +31,7 @@ jobs:
       - name: Upload static files artifact
         uses: actions/upload-artifact@v4
         with:
-          name: static
+          name: ${{inputs.environment}}-static
           path: static/
 
   copy_backend_static_files:
@@ -47,7 +47,7 @@ jobs:
       - name: Download static files artifact
         uses: actions/download-artifact@v4
         with: 
-          name: static
+          name: ${{inputs.environment}}-static
           path: static/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
