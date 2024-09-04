@@ -30,7 +30,7 @@ jobs:
       - name: Collect static
         run: python manage.py collectstatic --noinput --clear
       - name: Upload static files artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: static
           path: static/
