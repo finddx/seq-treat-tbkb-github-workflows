@@ -28,7 +28,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.TF_VAR_PROJECT_NAME}}-main-${{vars.TF_VAR_ENV_NAME}}-my-github-actions-terraform
+            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.TF_VAR_PROJECT}}-main-${{vars.TF_VAR_ENV}}-my-github-actions-terraform
             aws-region: ${{vars.TF_VAR_AWS_REGION}}
             mask-aws-account-id: true
   
