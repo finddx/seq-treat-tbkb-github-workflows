@@ -28,8 +28,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-terraform
-            aws-region: ${{vars.AWS_REGION}}
+            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.TF_VAR_PROJECT_NAME}}-main-${{vars.TF_VAR_ENV_NAME}}-my-github-actions-terraform
+            aws-region: ${{vars.TF_VAR_AWS_REGION}}
             mask-aws-account-id: true
   
     - name: Hashicorp Setup
