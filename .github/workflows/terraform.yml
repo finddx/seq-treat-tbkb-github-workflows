@@ -67,4 +67,7 @@ jobs:
     - name: Terraform Apply
       id: apply
       run: terraform apply -auto-approve -no-color
-
+      env:
+        TF_VAR_project_name: ${{vars.PROJECT_NAME}}
+        TF_VAR_environment: ${{vars.ENV_NAME}}
+        TF_VAR_aws_region: ${{vars.AWS_REGION}}
