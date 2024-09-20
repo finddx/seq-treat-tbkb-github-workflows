@@ -28,9 +28,9 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.TF_VAR_PROJECT}}-main-${{vars.TF_VAR_ENV}}-my-github-actions-terraform
-            aws-region: ${{vars.TF_VAR_AWS_REGION}}
-            mask-aws-account-id: true
+        role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.TF_VAR_PROJECT}}-main-${{vars.TF_VAR_ENV}}-my-github-actions-terraform
+        aws-region: ${{vars.TF_VAR_AWS_REGION}}
+        mask-aws-account-id: true
   
     - name: Hashicorp Setup
       uses: hashicorp/setup-terraform@v3
@@ -59,10 +59,11 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: terraform plan -no-color
-      continue-on-error: true
+      env:
+        TF_VAR_PROJECT: ${{vars.TF_VAR_PROJECT}}
+        TF_VAR_ENV: ${{vars.TF_VAR_ENV}}
 
     - name: Terraform Apply
       id: apply
       run: terraform apply -auto-approve -no-color
-      continue-on-error: true
 
