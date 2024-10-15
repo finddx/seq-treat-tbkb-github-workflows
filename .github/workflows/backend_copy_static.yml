@@ -5,8 +5,7 @@ on:
     inputs:
       environment:
         required: true
-        type: string
-  
+        type: string  
     secrets:
       AWS_ACCOUNT_ID:
         required: true
