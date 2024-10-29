@@ -10,7 +10,6 @@ on:
       AWS_ACCOUNT_ID:
         required: true
 
-
 jobs:
   terraform:
     name: 'Terraform'
@@ -25,6 +24,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    # Assuming the IAM role from AWS with admin rights
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -41,7 +41,8 @@ jobs:
       id: fmt
       run: terraform fmt -check
       continue-on-error: true
-    
+
+    # Using a GitHub Personal Access Token (PAT) needed to read the terrafom module repository
     - name: Terraform Init
       id: init
       run: |
@@ -63,6 +64,7 @@ jobs:
         TF_VAR_project_name: ${{vars.PROJECT_NAME}}
         TF_VAR_environment: ${{vars.ENV_NAME}}
         TF_VAR_aws_region: ${{vars.AWS_REGION}}
+        TF_VAR_github_org_name: ${{github.repository_owner}}
 
     - name: Terraform Apply
       id: apply
@@ -71,3 +73,4 @@ jobs:
         TF_VAR_project_name: ${{vars.PROJECT_NAME}}
         TF_VAR_environment: ${{vars.ENV_NAME}}
         TF_VAR_aws_region: ${{vars.AWS_REGION}}
+        TF_VAR_github_org_name: ${{github.repository_owner}}
