@@ -16,7 +16,6 @@ on:
       AWS_ACCOUNT_ID:
         required: true
      
-
 jobs:
   build_push:
     runs-on: ubuntu-latest

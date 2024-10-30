@@ -21,7 +21,6 @@ jobs:
     secrets:
       AWS_ACCOUNT_iD: ${{secrets.AWS_ACCOUNT_ID}}
 
-
   run_migration_task:
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
