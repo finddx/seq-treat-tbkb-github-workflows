@@ -43,15 +43,11 @@ jobs:
       continue-on-error: true
 
     # Using a GitHub Personal Access Token (PAT) needed to read the terrafom module repository
+    # Edit: removed the use of PAT as we have open sourced terraform modules
     - name: Terraform Init
       id: init
       run: |
-        echo "machine github.com login x password ${MY_GH_TOKEN}" > ~/.netrc
-        git config --global url."https://github.com/".insteadOf "git://github.com/"
-        git config --global advice.detachedHead false
         terraform init -input=false
-      env:
-        MY_GH_TOKEN: ${{secrets.PAT_FINE_GRAINED}}
 
     - name: Terraform Validate
       id: validate
