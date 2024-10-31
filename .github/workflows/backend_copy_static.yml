@@ -39,9 +39,7 @@ jobs:
     needs: collect_static_backend
     env:
       STATIC_ROOT: "static/"
-      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
-      PROJECT_NAME: ${{vars.PROJECT_NAME}}
-      ENV_NAME: ${{vars.ENV_NAME}}
+      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-django-static-files"
     steps:
       - name: Download static files artifact
         uses: actions/download-artifact@v4
@@ -51,14 +49,14 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Upload artifacts to S3
         run: | 
           aws s3 rm --recursive s3://${AWS_STORAGE_BUCKET_NAME}
           aws s3 cp ${STATIC_ROOT} s3://${AWS_STORAGE_BUCKET_NAME}/static_files/ --recursive --include "*"
-          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
+          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{inputs.environment}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
       

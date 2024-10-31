@@ -11,6 +11,14 @@ on:
       AWS_ACCOUNT_ID:
         required: true
 
+env:
+  SUBNET_LABEL_TAG: "${{vars.PROJECT_NAME}}-${{inputs.environment}}-public-subnets"
+  SECURITY_GROUP_LABEL_TAG: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-private-ecs"
+  CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-cluster"
+  CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-backend"
+  AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-django-static-files"
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   build_push:
     uses: finddx/seq-treat-tbkb-github-workflows/.github/workflows/build_push.yml@main
@@ -27,18 +35,11 @@ jobs:
     needs: build_push
     container:
       image: amazon/aws-cli:latest
-    env:
-      SUBNET_LABEL_TAG: "${{vars.PROJECT_NAME}}-${{vars.ENV_NAME}}-public-subnets"
-      SECURITY_GROUP_LABEL_TAG: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-private-ecs"
-      CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
-      CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
-      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Start migration task
@@ -61,16 +62,11 @@ jobs:
     needs: run_migration_task
     container:
       image: amazon/aws-cli:latest
-    env:
-      CI_AWS_ECS_CLUSTER: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-cluster"
-      CI_AWS_ECS_TASK_DEFINITION: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-backend"
-      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-django-static-files"
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-backend
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Update backend task
