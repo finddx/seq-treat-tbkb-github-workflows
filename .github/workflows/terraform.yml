@@ -10,6 +10,17 @@ on:
       AWS_ACCOUNT_ID:
         required: true
 
+env:
+  TF_VAR_project_name: ${{vars.PROJECT_NAME}}
+  TF_VAR_environment: ${{vars.ENV_NAME}}
+  TF_VAR_aws_region: ${{vars.AWS_REGION}}
+  TF_VAR_no_reply_email: ${{vars.NO_REPLY}}
+  TF_VAR_cf_domain: ${{vars.CF_DOMAIN}}
+  TF_VAR_gh_action_roles: ${{vars.CICD_ROLES}}
+  TF_VAR_chatbot_notifs_implementation: ${{vars.CHATBOT_NOTIFS}}
+  TF_VAR_github_org_name: ${{github.repository_owner}}
+  TF_VAR_github_repo_prefix: ${{vars.REPO_PREFIX}}
+
 jobs:
   terraform:
     name: 'Terraform'
@@ -56,17 +67,7 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: terraform plan -no-color
-      env:
-        TF_VAR_project_name: ${{vars.PROJECT_NAME}}
-        TF_VAR_environment: ${{vars.ENV_NAME}}
-        TF_VAR_aws_region: ${{vars.AWS_REGION}}
-        TF_VAR_github_org_name: ${{github.repository_owner}}
 
     - name: Terraform Apply
       id: apply
       run: terraform apply -auto-approve -no-color
-      env:
-        TF_VAR_project_name: ${{vars.PROJECT_NAME}}
-        TF_VAR_environment: ${{vars.ENV_NAME}}
-        TF_VAR_aws_region: ${{vars.AWS_REGION}}
-        TF_VAR_github_org_name: ${{github.repository_owner}}
