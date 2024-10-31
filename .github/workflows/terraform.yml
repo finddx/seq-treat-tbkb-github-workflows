@@ -12,7 +12,7 @@ on:
 
 env:
   TF_VAR_project_name: ${{vars.PROJECT_NAME}}
-  TF_VAR_environment: ${{vars.ENV_NAME}}
+  TF_VAR_environment: ${{inputs.environment}}
   TF_VAR_aws_region: ${{vars.AWS_REGION}}
   TF_VAR_no_reply_email: ${{vars.NO_REPLY}}
   TF_VAR_cf_domain: ${{vars.CF_DOMAIN}}
@@ -39,7 +39,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-terraform
+            role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-terraform
             aws-region: ${{vars.AWS_REGION}}
             mask-aws-account-id: true
   
