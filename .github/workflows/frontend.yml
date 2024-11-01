@@ -23,7 +23,7 @@ jobs:
         shell: bash
     environment: ${{inputs.environment}}
     env:
-      CI: false
+      CI: true
       REACT_APP_NODE_ENV: ${{vars.REACT_APP_NODE_ENV}}
       REACT_APP_SERVER_ENDPOINT: "${{vars.ENV_URL}}/api/v1/"
       REACT_APP_ENTRA_TENANT: "${{vars.REACT_APP_ENTRA_TENANT}}"
@@ -62,7 +62,7 @@ jobs:
     environment: ${{inputs.environment}}
     runs-on: ${{inputs.runner}}
     env:
-      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-static-files"
+      AWS_STORAGE_BUCKET_NAME: "${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-static-files"
     defaults:
       run:
         shell: bash
@@ -75,7 +75,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{vars.ENV_NAME}}-my-github-actions-frontend
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-frontend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Clean up bucket
@@ -84,7 +84,7 @@ jobs:
         run: aws s3 cp build/ s3://${AWS_STORAGE_BUCKET_NAME} --recursive --include "*"
       - name: Invalidate Cloudfront distribution
         run: |
-          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{vars.ENV_NAME}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
+          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{inputs.environment}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
           for i in $(aws s3api list-objects-v2 --bucket ${AWS_STORAGE_BUCKET_NAME}  --query "Contents[?!(contains(Key, 'static/'))].Key" --output text)
           do
             aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/${i}"  --output text --query 'Invalidation.Id';
