@@ -56,23 +56,33 @@ jobs:
         run: |
           echo "BUCKET=$(aws resourcegroupstaggingapi get-resources \
             --tag-filters Key=Usage,Values=django-static-files \
-            --tag filters Key=Environment,Values=${{inputs.environment}} \
+            --tag-filters Key=Environment,Values=${{inputs.environment}} \
             --resource-type-filters 's3:bucket' \
             --region ${{vars.AWS_REGION}} \
             --query 'ResourceTagMappingList[0].ResourceARN' \
             --output text \
             )" >> "$GITHUB_OUTPUT"
+      - name: Get distribution ID
+        id: distribution
+        run: |
+          echo "DISTRIBUTION=$(aws resourcegroupstaggingapi get-resources \
+            --tag-filters Key=Environment,Values=${{inputs.environment}} \
+            --resource-type-filters 'cloudfront' \
+            --region us-east-1  \
+            --query 'ResourceTagMappingList[0].ResourceARN'
+            --output text | \
+            sed 's:.*/::')" >> $GITHUB_OUTPUT
       - name: Clean up bucket
         env:
            BUCKET: ${{steps.bucket.ouputs.BUCKET}}
         run: aws s3 rm --recursive s3://${BUCKET}
       - name: Copy new files
-        run: aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
         env:
           BUCKET: ${{steps.bucket.ouputs.BUCKET}}
+        run: aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
       - name: Invalidate Cloudfront distribution
         run: | 
-          CDN_DISTRIBUTION_ID=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=Environment,Values=${{inputs.environment}} --resource-type-filters 'cloudfront' --tags-per-page 100 --region us-east-1  --query "ResourceTagMappingList[0].ResourceARN" | sed 's:.*/::' | tr -d '"')
-          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${CDN_DISTRIBUTION_ID} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
-          aws cloudfront wait invalidation-completed --distribution-id ${CDN_DISTRIBUTION_ID} --id ${INVALIDATION_ID}
-      
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
+          aws cloudfront wait invalidation-completed --distribution-id ${DISTRIBUTION} --id ${INVALIDATION_ID}
+        env:
+          DISTRIBUTION: ${{steps.distribution.outputs.DISTRIBUTION}}
