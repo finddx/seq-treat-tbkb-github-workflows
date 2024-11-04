@@ -56,12 +56,12 @@ jobs:
         run: |
           echo "BUCKET=$(aws resourcegroupstaggingapi get-resources \
             --tag-filters Key=Usage,Values=django-static-files \
-            --tag filters Key=Environment,Values=${{inputs.environments}} \
+            --tag filters Key=Environment,Values=${{inputs.environment}} \
             --resource-type-filters 's3:bucket' \
             --region ${{vars.AWS_REGION}} \
-            --query "ResourceTagMappingList[0].ResourceARN" \
-            --output text
-            ") >> "$GITHUB_OUTPUT"
+            --query 'ResourceTagMappingList[0].ResourceARN' \
+            --output text \
+            )" >> "$GITHUB_OUTPUT"
       - name: Clean up bucket
         env:
            BUCKET: ${{steps.bucket.ouputs.BUCKET}}
