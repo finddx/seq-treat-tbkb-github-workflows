@@ -60,7 +60,7 @@ jobs:
             --resource-type-filters 's3:bucket' \
             --region ${{vars.AWS_REGION}} \
             --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text | sed 's/.*//')" \
+            --output text | sed 's/.*://')" \
             >> "$GITHUB_OUTPUT"
       - name: Get distribution ID
         id: distribution
