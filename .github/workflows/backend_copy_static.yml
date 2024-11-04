@@ -61,7 +61,7 @@ jobs:
             --region ${{vars.AWS_REGION}} \
             --query "ResourceTagMappingList[0].ResourceARN" \
             --output text
-            ) >> "$GIHUB_OUTPUT"
+            ") >> "$GITHUB_OUTPUT"
       - name: Clean up bucket
         env:
            BUCKET: ${{steps.bucket.ouputs.BUCKET}}
