@@ -60,8 +60,8 @@ jobs:
             --resource-type-filters 's3:bucket' \
             --region ${{vars.AWS_REGION}} \
             --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text \
-            )" >> "$GITHUB_OUTPUT"
+            --output text | sed 's/.*//')" \
+            >> "$GITHUB_OUTPUT"
       - name: Get distribution ID
         id: distribution
         run: |
@@ -69,20 +69,18 @@ jobs:
             --tag-filters Key=Environment,Values=${{inputs.environment}} \
             --resource-type-filters 'cloudfront' \
             --region us-east-1  \
-            --query 'ResourceTagMappingList[0].ResourceARN'
-            --output text | \
-            sed 's:.*/::')" >> $GITHUB_OUTPUT
-      - name: Clean up bucket
+            --query 'ResourceTagMappingList[0].ResourceARN' \
+            --output text | sed 's:.*/::')" \
+            >> "$GITHUB_OUTPUT"
+      - name: Clean up bucket and copy files
         env:
-           BUCKET: ${{steps.bucket.ouputs.BUCKET}}
-        run: aws s3 rm --recursive s3://${BUCKET}
-      - name: Copy new files
-        env:
-          BUCKET: ${{steps.bucket.ouputs.BUCKET}}
-        run: aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
+           BUCKET: ${{steps.bucket.outputs.BUCKET}}
+        run: |
+          aws s3 rm --recursive s3://${BUCKET}
+          aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
       - name: Invalidate Cloudfront distribution
+        env:
+          DISTRIBUTION: ${{steps.distribution.outputs.DISTRIBUTION}}        
         run: | 
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${DISTRIBUTION} --id ${INVALIDATION_ID}
-        env:
-          DISTRIBUTION: ${{steps.distribution.outputs.DISTRIBUTION}}
