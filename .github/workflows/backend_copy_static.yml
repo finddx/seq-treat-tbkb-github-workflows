@@ -54,12 +54,12 @@ jobs:
       - name: Get bucket name via tags
         id: bucket
         run: |
-          echo "BUCKET=$(aws resourcegroupstaggingapi get-resources\
+          echo "BUCKET=$(aws resourcegroupstaggingapi get-resources \
             --tag-filters Key=Usage,Values=django-static-files \
-            --tag filters Key=Environment,Values=${{inputs.environments}}\
-            --resource-type-filters 's3:bucket'\
-            --region ${{vars.AWS_REGION}}\
-            --query "ResourceTagMappingList[0].ResourceARN"\
+            --tag filters Key=Environment,Values=${{inputs.environments}} \
+            --resource-type-filters 's3:bucket' \
+            --region ${{vars.AWS_REGION}} \
+            --query "ResourceTagMappingList[0].ResourceARN" \
             --output text
             ) >> "$GIHUB_OUTPUT"
       - name: Clean up bucket
