@@ -51,32 +51,31 @@ jobs:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
-      - name: Get bucket name via tags
+      - name: Get bucket ARN via tags
         uses: finddx/get-aws-resource-by-tag@c02870451dd379e15c70393d33966f69449c846b
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}}"
           resource_type: "s3:bucket"
           aws_region: ${{vars.AWS_REGION}}
-      - name: Get distribution ID
+      - name: Get CF distribution ARN via tags
+        uses: finddx/get-aws-resource-by-tag@c02870451dd379e15c70393d33966f69449c846b
         id: distribution
-        run: |
-          echo "DISTRIBUTION=$(aws resourcegroupstaggingapi get-resources \
-            --tag-filters Key=Environment,Values=${{inputs.environment}} \
-            --resource-type-filters 'cloudfront' \
-            --region us-east-1  \
-            --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text | sed 's:.*/::')" \
-            >> "$GITHUB_OUTPUT"
+        with:
+          tag_filters: "--tag-filters Key=Environment,Values=${{inputs.environment}}"
+          resource_type: "cloudfront"
+          aws_region: "us-east-1"
       - name: Clean up bucket and copy files
         env:
-           BUCKET: ${{steps.bucket.outputs.resource_id}}
+           BUCKET_FULL_ARN: ${{steps.bucket.outputs.resource_id}}
         run: |
-          aws s3 rm --recursive s3://${BUCKET}
-          aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
+          bucket_name = $(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
+          aws s3 rm --recursive s3://${bucket_name}
+          aws s3 cp ${STATIC_ROOT} s3://${bucket_name}/static_files/ --recursive --include "*"
       - name: Invalidate Cloudfront distribution
         env:
-          DISTRIBUTION: ${{steps.distribution.outputs.DISTRIBUTION}}        
+          DISTRIBUTION_FULL_ARN: ${{steps.distribution.outputs.resource_id}}        
         run: | 
-          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
-          aws cloudfront wait invalidation-completed --distribution-id ${DISTRIBUTION} --id ${INVALIDATION_ID}
+          distribution_id=$(echo ${DISTRIBUTION_FULL_ARN} | 's|.*/||')
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
+          aws cloudfront wait invalidation-completed --distribution-id ${distribution_id} --id ${INVALIDATION_ID}
