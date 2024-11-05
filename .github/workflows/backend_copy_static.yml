@@ -52,7 +52,7 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket name via tags
-        uses: ./.github/actions/get_resource_by_tag
+        uses: finddx/get-aws-resource-by-tag
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}}"
