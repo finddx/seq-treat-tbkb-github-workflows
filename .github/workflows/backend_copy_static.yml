@@ -52,15 +52,11 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket name via tags
+        uses: finddx/seq-treat-tbkb-github-workflows/.github/workflows/get_resource_by_tag.yml@main
         id: bucket
-        run: |
-          echo "BUCKET=$(aws resourcegroupstaggingapi get-resources \
-            --tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}} \
-            --resource-type-filters 's3:bucket' \
-            --region ${{vars.AWS_REGION}} \
-            --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text | sed 's/.*://')" \
-            >> "$GITHUB_OUTPUT"
+        with:
+          tag_filters: "--tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}}"
+          resource_type: "s3:bucket"
       - name: Get distribution ID
         id: distribution
         run: |
@@ -73,7 +69,7 @@ jobs:
             >> "$GITHUB_OUTPUT"
       - name: Clean up bucket and copy files
         env:
-           BUCKET: ${{steps.bucket.outputs.BUCKET}}
+           BUCKET: ${{steps.bucket.outputs.resource_id}}
         run: |
           aws s3 rm --recursive s3://${BUCKET}
           aws s3 cp ${STATIC_ROOT} s3://${BUCKET}/static_files/ --recursive --include "*"
