@@ -69,7 +69,7 @@ jobs:
         env:
            BUCKET_FULL_ARN: ${{steps.bucket.outputs.resource_id}}
         run: |
-          bucket_name = $(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
+          bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
           aws s3 rm --recursive s3://${bucket_name}
           aws s3 cp ${STATIC_ROOT} s3://${bucket_name}/static_files/ --recursive --include "*"
       - name: Invalidate Cloudfront distribution
