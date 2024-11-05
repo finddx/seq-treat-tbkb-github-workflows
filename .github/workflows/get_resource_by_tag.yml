@@ -9,9 +9,6 @@ on:
       tag_filters:
         required: true
         type: string  
-    secrets:
-      AWS_ACCOUNT_ID:
-        required: true
 
 jobs:
   build_push:
