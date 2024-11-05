@@ -52,14 +52,14 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket ARN via tags
-        uses: finddx/get-aws-resource-by-tag@c02870451dd379e15c70393d33966f69449c846b
+        uses: finddx/get-aws-resource-by-tag@v1
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}}"
           resource_type: "s3:bucket"
           aws_region: ${{vars.AWS_REGION}}
       - name: Get CF distribution ARN via tags
-        uses: finddx/get-aws-resource-by-tag@c02870451dd379e15c70393d33966f69449c846b
+        uses: finddx/get-aws-resource-by-tag@v1
         id: distribution
         with:
           tag_filters: "--tag-filters Key=Environment,Values=${{inputs.environment}}"
@@ -76,6 +76,6 @@ jobs:
         env:
           DISTRIBUTION_FULL_ARN: ${{steps.distribution.outputs.resource_id}}        
         run: | 
-          distribution_id=$(echo ${DISTRIBUTION_FULL_ARN} | 's|.*/||')
+          distribution_id=$(echo ${DISTRIBUTION_FULL_ARN} | sed 's|.*/||')
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/static_files/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${distribution_id} --id ${INVALIDATION_ID}
