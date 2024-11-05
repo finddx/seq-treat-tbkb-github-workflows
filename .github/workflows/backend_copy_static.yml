@@ -52,7 +52,7 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket name via tags
-        uses: finddx/seq-treat-tbkb-github-workflows/.github/workflows/get_resource_by_tag.yml@main
+        uses: finddx/seq-treat-tbkb-github-workflows/get_resource_by_tag@cbc97d7aa8f20bb1b75a497318587c86b720ce0a
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=django-static-files Key=Environment,Values=${{inputs.environment}}"
