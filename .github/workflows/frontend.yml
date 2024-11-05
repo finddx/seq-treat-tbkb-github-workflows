@@ -76,40 +76,37 @@ jobs:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-frontend
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
-      - name: Get bucket name via tags
+      - name: Get bucket ARN via tags
+        uses: finddx/get-aws-resource-by-tag@v1
         id: bucket
-        run: |
-          echo "BUCKET=$(aws resourcegroupstaggingapi get-resources \
-            --tag-filters Key=Usage,Values=static-files Key=Environment,Values=${{inputs.environment}} \
-            --resource-type-filters 's3:bucket' \
-            --region ${{vars.AWS_REGION}} \
-            --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text | sed 's/.*://')" \
-            >> "$GITHUB_OUTPUT"
-      - name: Get distribution ID
+        with:
+          tag_filters: "--tag-filters Key=Usage,Values=static-files Key=Environment,Values=${{inputs.environment}}"
+          resource_type: "s3:bucket"
+          aws_region: ${{vars.AWS_REGION}}
+      - name: Get CF distribution ARN via tags
+        uses: finddx/get-aws-resource-by-tag@v1
         id: distribution
-        run: |
-          echo "DISTRIBUTION=$(aws resourcegroupstaggingapi get-resources \
-            --tag-filters Key=Environment,Values=${{inputs.environment}} \
-            --resource-type-filters 'cloudfront' \
-            --region us-east-1  \
-            --query 'ResourceTagMappingList[0].ResourceARN' \
-            --output text | sed 's:.*/::')" \
-            >> "$GITHUB_OUTPUT"
+        with:
+          tag_filters: "--tag-filters Key=Environment,Values=${{inputs.environment}}"
+          resource_type: "cloudfront"
+          aws_region: "us-east-1"
       - name: Clean up bucket and copy new files
         env: 
-          BUCKET: ${{steps.bucket.outputs.BUCKET}}
+          BUCKET_FULL_ARN: ${{steps.bucket.outputs.resource_id}}
         run: |
-          aws s3 rm --recursive s3://${BUCKET}
-          aws s3 cp build/ s3://${BUCKET} --recursive --include "*"
+          bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
+          aws s3 rm --recursive s3://${bucket_name}
+          aws s3 cp build/ s3://${bucket_name} --recursive --include "*"
       - name: Invalidate Cloudfront distribution
         env: 
-          BUCKET: ${{steps.bucket.outputs.BUCKET}}
-          DISTRIBUTION: ${{steps.distribution.outputs.DISTRIBUTION}}
+          BUCKET_FULL_ARN: ${{steps.bucket.outputs.resource_id}}
+          DISTRIBUTION_FULL_ARN: ${{steps.distribution.outputs.resource_id}}        
         run: |
-          for i in $(aws s3api list-objects-v2 --bucket ${BUCKET}  --query "Contents[?!(contains(Key, 'static/'))].Key" --output text)
+          bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
+          distribution_id=$(echo ${DISTRIBUTION_FULL_ARN} | sed 's|.*/||')
+          for i in $(aws s3api list-objects-v2 --bucket ${bucket_name}  --query "Contents[?!(contains(Key, 'static/'))].Key" --output text)
           do
-            aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION} --paths "/${i}"  --output text --query 'Invalidation.Id';
+            aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/${i}"  --output text --query 'Invalidation.Id';
           done
-          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION} --paths "/static/*"  --output text --query 'Invalidation.Id')
-          aws cloudfront wait invalidation-completed --distribution-id ${DISTRIBUTION} --id ${INVALIDATION_ID}
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/static/*"  --output text --query 'Invalidation.Id')
+          aws cloudfront wait invalidation-completed --distribution-id ${distribution_id} --id ${INVALIDATION_ID}
