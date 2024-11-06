@@ -69,6 +69,5 @@ jobs:
         run: |
           bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
           distribution_id=$(echo ${DISTRIBUTION_FULL_ARN} | sed 's|.*/||')
-          aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/*"  --output text --query 'Invalidation.Id';
-          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/static/*"  --output text --query 'Invalidation.Id')
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id ${distribution_id} --paths "/*"  --output text --query 'Invalidation.Id')
           aws cloudfront wait invalidation-completed --distribution-id ${distribution_id} --id ${INVALIDATION_ID}
