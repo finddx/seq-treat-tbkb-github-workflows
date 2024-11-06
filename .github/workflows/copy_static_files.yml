@@ -19,6 +19,7 @@ on:
 
 env:
   bucket_tag: ${{inputs.deploy_type=='frontend' && 'static-files' || 'django-static-files'}}
+  destination_folder: ${{inputs.deploy_type=='backend' && '/static_files/' || ''}}
 jobs:
   copy_static_static:
     environment: ${{inputs.environment}}
@@ -58,7 +59,7 @@ jobs:
         run: |
           bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
           aws s3 rm --recursive s3://${bucket_name}
-          aws s3 cp static/ s3://${bucket_name} --recursive --include "*"
+          aws s3 cp static/ s3://${bucket_name}${{env.destination_folder}} --recursive --include "*"
       - name: Invalidate Cloudfront distribution
         env: 
           DISTRIBUTION_FULL_ARN: ${{steps.distribution.outputs.resource_id}}        
