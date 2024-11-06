@@ -55,4 +55,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{inputs.environment}}-static
-          path: static/
+          path: build/
