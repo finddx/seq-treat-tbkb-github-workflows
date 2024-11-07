@@ -61,7 +61,7 @@ jobs:
           terraform {
             backend "s3" {
               bucket         = "${{secrets.TF_VAR_BACKEND_BUCKET}}"
-              dynamodb_table = "${{vars.PROJECT_NAME}}-${{inputs.environment}}-tf-backend-lock"
+              dynamodb_table = "tf-backend-lock-${{vars.PROJECT_NAME}}-${{inputs.environment}}"
               key            = "${{github.repository}}/terraform.tfstate"
               region         = "${{vars.AWS_REGION}}"
             }
