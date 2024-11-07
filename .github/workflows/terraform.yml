@@ -53,6 +53,23 @@ jobs:
       run: terraform fmt -check
       continue-on-error: true
 
+    #Setting up the backend using github secrets
+    - name: Setting up terraform backend
+      id: backend
+      run: |
+        cat > backend.tf << EOF
+        terraform {
+          terraform {
+            backend "s3" {
+              bucket         = "${{secrets.TF_VAR_backend_bucket}}"
+              dynamodb_table = "${{vars.PROJECT_NAME}}-${{inputs.environment}}-tf-backend-lock"
+              key            = "${{github.repository}}/terraform.tfstate"
+              region         = "${{vars.AWS_REGION}}"
+            }
+          }
+        }
+        EOF
+
     # Using a GitHub Personal Access Token (PAT) needed to read the terrafom module repository
     # Edit: removed the use of PAT as we have open sourced terraform modules
     - name: Terraform Init
