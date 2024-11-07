@@ -66,7 +66,6 @@ jobs:
               region         = "${{vars.AWS_REGION}}"
             }
           }
-        }
         EOF
 
     # Using a GitHub Personal Access Token (PAT) needed to read the terrafom module repository
