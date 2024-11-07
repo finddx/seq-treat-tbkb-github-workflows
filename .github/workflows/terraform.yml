@@ -8,7 +8,7 @@ on:
         type: string
     secrets:
       AWS_ACCOUNT_ID:
-        required: true
+        required: true        
 
 env:
   TF_VAR_project_name: ${{vars.PROJECT_NAME}}
@@ -61,7 +61,7 @@ jobs:
         terraform {
           terraform {
             backend "s3" {
-              bucket         = "${{secrets.TF_VAR_backend_bucket}}"
+              bucket         = "${{secrets.TF_VAR_BACKEND_BUCKET}}"
               dynamodb_table = "${{vars.PROJECT_NAME}}-${{inputs.environment}}-tf-backend-lock"
               key            = "${{github.repository}}/terraform.tfstate"
               region         = "${{vars.AWS_REGION}}"
