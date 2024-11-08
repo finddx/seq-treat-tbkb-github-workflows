@@ -8,18 +8,14 @@ on:
         type: string
     secrets:
       AWS_ACCOUNT_ID:
-        required: true        
+        required: true
+      TF_VAR_BACKEND_BUCKET:
+        required: true
 
 env:
   TF_VAR_project_name: ${{vars.PROJECT_NAME}}
   TF_VAR_environment: ${{inputs.environment}}
   TF_VAR_aws_region: ${{vars.AWS_REGION}}
-  TF_VAR_no_reply_email: ${{vars.NO_REPLY}}
-  TF_VAR_cf_domain: ${{vars.CF_DOMAIN}}
-  TF_VAR_gh_action_roles: ${{vars.CICD_ROLES}}
-  TF_VAR_chatbot_notifs_implementation: ${{vars.CHATBOT_NOTIFS}}
-  TF_VAR_github_org_name: ${{github.repository_owner}}
-  TF_VAR_github_repo_prefix: ${{vars.REPO_PREFIX}}
 
 jobs:
   terraform:
