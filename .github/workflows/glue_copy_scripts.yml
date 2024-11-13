@@ -32,6 +32,9 @@ jobs:
           resource_type: "s3:bucket"
           aws_region: ${{vars.AWS_REGION}}
       - run: |
+          bucket_name=$(echo ${BUCKET_FULL_ARN} | sed "s/.*://")
           cd ./cfn/glue-jobs/
           zip -r9 ETL_tools.zip biosql_gene_views.py variant_annotation_categorization.py phenotypic_data_views.py
-          aws s3 cp ./  s3://${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-glue-scripts/glue-jobs/ --recursive
+          aws s3 cp ./  s3://${bucket_name}/glue-jobs/ --recursive
+        env: 
+          BUCKET_FULL_ARN: ${{steps.bucket.outputs.resource_id}}
