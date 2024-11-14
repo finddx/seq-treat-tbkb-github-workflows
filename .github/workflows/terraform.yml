@@ -68,8 +68,7 @@ jobs:
     # Edit: removed the use of PAT as we have open sourced terraform modules
     - name: Terraform Init
       id: init
-      run: |
-        terraform init -input=false
+      run: terraform init -input=false
 
     - name: Terraform Validate
       id: validate
