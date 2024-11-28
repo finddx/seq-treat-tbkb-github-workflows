@@ -25,7 +25,7 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket ARN via tags
-        uses: finddx/get-aws-resource-by-tag@v1
+        uses: finddx/seq-treat-tbkb-github-actions/get-aws-resource-by-tag@getresv1
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=glue-scripts Key=Environment,Values=${{inputs.environment}}"

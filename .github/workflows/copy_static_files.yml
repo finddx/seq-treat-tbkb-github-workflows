@@ -40,14 +40,14 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Get bucket ARN via tags
-        uses: finddx/get-aws-resource-by-tag@v1
+        uses: finddx/seq-treat-tbkb-github-actions/get-aws-resource-by-tag@getresv1
         id: bucket
         with:
           tag_filters: "--tag-filters Key=Usage,Values=${{env.bucket_tag}} Key=Environment,Values=${{inputs.environment}}"
           resource_type: "s3:bucket"
           aws_region: ${{vars.AWS_REGION}}
       - name: Get CF distribution ARN via tags
-        uses: finddx/get-aws-resource-by-tag@v1
+        uses: finddx/seq-treat-tbkb-github-actions/get-aws-resource-by-tag@getresv1
         id: distribution
         with:
           tag_filters: "--tag-filters Key=Environment,Values=${{inputs.environment}}"
