@@ -38,7 +38,7 @@ jobs:
       image: amazon/aws-cli:latest
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
@@ -65,7 +65,7 @@ jobs:
       image: amazon/aws-cli:latest
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-backend
           aws-region: ${{vars.AWS_REGION}}
