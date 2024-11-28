@@ -12,6 +12,9 @@ on:
       workdir:
         required: true
         type: string
+      rolename:
+        required: true
+        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -26,7 +29,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-push-glue
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{vars.PROJECT_NAME}}-main-${{inputs.environment}}-my-github-actions-${{inputs.rolename}}
           aws-region: ${{vars.AWS_REGION}}
           mask-aws-account-id: true
       - name: Login to AWS ECR
