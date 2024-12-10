@@ -26,7 +26,7 @@ jobs:
       environment: ${{inputs.environment}}
       repo_name: backend
       workdir: ./
-      rolename: ${{startsWith(inputs.environment, 'prod') && 'glue-docker' || 'push-docker-image'}}
+      rolename: ${{startsWith(inputs.environment, 'prod') && 'push-glue' || 'push-docker-image'}}
     secrets:
       AWS_ACCOUNT_iD: ${{secrets.AWS_ACCOUNT_ID}}
 
